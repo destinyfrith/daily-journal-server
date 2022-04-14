@@ -1,6 +1,7 @@
 import json
 from http.server import BaseHTTPRequestHandler, HTTPServer
-from views.entry_requests import get_all_entries
+from views.entry_requests import get_all_entries, get_single_entry
+from views.mood_requests import get_all_moods
 
 # Here's a class. It inherits from another class.
 # For now, think of a class as a container for functions that
@@ -89,11 +90,11 @@ class HandleRequests(BaseHTTPRequestHandler):
                     response = f"{get_single_entry(id)}"
                 else:
                     response = f"{get_all_entries()}"
-            elif resource == "customers":
+            elif resource == "moods":
                 if id is not None:
                     response = f"{get_single_customer(id)}"
                 else:
-                    response = f"{get_all_customers()}"
+                    response = f"{get_all_moods()}"
 
         # Response from parse_url() is a tuple with 3
         # items in it, which means the request was for
@@ -122,24 +123,24 @@ class HandleRequests(BaseHTTPRequestHandler):
         # Parse the URL
         (resource, id) = self.parse_url(self.path)
 
-        # Initialize new animal
-        new_animal = None
+        # Initialize new entry:
+        new_entry = None
         # Add a new animal to the list. Don't worry about
         # the orange squiggle, you'll define the create_animal
         # function next.
-        if resource == "animals":
-            new_animal = create_animal(post_body)
+        if resource == "entries":
+            new_entry = create_entry(post_body)
 
-            self.wfile.write(f"{new_animal}".encode())
+            self.wfile.write(f"{new_entry}".encode())
 
         # Initialize new location
-        new_location = None
+        new_mood = None
 
-        if resource == "locations":
-            new_location = create_location(post_body)
+        if resource == "moods":
+            new_mood = create_mood(post_body)
 
         # Encode the new location and send in response
-            self.wfile.write(f"{new_location}".encode())
+            self.wfile.write(f"{new_mood}".encode())
 
     # Here's a method on the class that overrides the parent's method.
     # It handles any PUT request.
@@ -154,8 +155,8 @@ class HandleRequests(BaseHTTPRequestHandler):
 
         success = False
 
-        if resource == "animals":
-            success = update_animal(id, post_body)
+        if resource == "entries":
+            success = update_entry(id, post_body)
         # rest of the elif's
 
         if success:
@@ -174,12 +175,12 @@ class HandleRequests(BaseHTTPRequestHandler):
         (resource, id) = self.parse_url(self.path)
 
         # Delete a single animal from the list
-        if resource == "animals":
-            delete_animal(id)
+        if resource == "entries":
+            delete_entry(id)
 
         # Delete a single animal from the list
-        if resource == "customers":
-            delete_customer(id)
+        if resource == "moods":
+            delete_mood(id)
 
         # Encode the new animal and send in response
         self.wfile.write("".encode())
