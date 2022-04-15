@@ -1,6 +1,6 @@
 import json
 from http.server import BaseHTTPRequestHandler, HTTPServer
-from views.entry_requests import get_all_entries, get_single_entry
+from views.entry_requests import get_all_entries, get_single_entry, delete_entry, search_entries
 from views.mood_requests import get_all_moods
 
 # Here's a class. It inherits from another class.
@@ -74,7 +74,7 @@ class HandleRequests(BaseHTTPRequestHandler):
     def do_GET(self):
         self._set_headers(200)
 
-        response = {}
+        response = ""
 
         # Parse URL and store entire tuple in a variable
         parsed = self.parse_url(self.path)
@@ -92,23 +92,19 @@ class HandleRequests(BaseHTTPRequestHandler):
                     response = f"{get_all_entries()}"
             elif resource == "moods":
                 if id is not None:
-                    response = f"{get_single_customer(id)}"
+                    response = f"{get_single_mood(id)}"
                 else:
                     response = f"{get_all_moods()}"
 
         # Response from parse_url() is a tuple with 3
         # items in it, which means the request was for
         # `/resource?parameter=value`
-        elif len(parsed) == 3:
+        if len(parsed) == 3:
             (resource, key, value) = parsed
+            if (key == 'q'):
+                response = search_entries(value)
 
-            # Is the resource `customers` and was there a
-            # query parameter that specified the customer
-            # email as a filtering value?
-            if key == "email" and resource == "customers":
-                response = get_customers_by_email(value)
-
-        self.wfile.write(response.encode())
+        self.wfile.write(f"{response}".encode())
 
     # Here's a method on the class that overrides the parent's method.
     # It handles any POST request.
@@ -177,10 +173,6 @@ class HandleRequests(BaseHTTPRequestHandler):
         # Delete a single animal from the list
         if resource == "entries":
             delete_entry(id)
-
-        # Delete a single animal from the list
-        if resource == "moods":
-            delete_mood(id)
 
         # Encode the new animal and send in response
         self.wfile.write("".encode())

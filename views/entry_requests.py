@@ -81,3 +81,38 @@ def get_single_entry(id):
 # use location_id as parameter
 # make sure to add new if statement in do_GET function on request_handler
 # import into init and requesthandler modules like always
+
+
+def delete_entry(id):
+    with sqlite3.connect("./journal.sqlite3") as conn:
+        db_cursor = conn.cursor()
+
+        db_cursor.execute("""
+        DELETE FROM entry
+        WHERE id = ?
+        """, (id, ))
+
+
+def search_entries(searchedTerm):
+    with sqlite3.connect("./journal.sqlite3") as conn:
+        conn.row_factory = sqlite3.Row
+        db_cursor = conn.cursor()
+        db_cursor.execute("""
+        SELECT *
+        FROM entry AS e
+        WHERE e.entry LIKE ?
+            OR e.concept LIKE ?
+        """, ("%" + searchedTerm + "%", "%" + searchedTerm + "%"))
+
+        # Initialize an empty list to hold an entries representations
+        entries = []
+        # Convert rows of data into a Python list
+        dataset = db_cursor.fetchall()
+        # Iterate the list of data returned from the database
+        for row in dataset:
+            entry = Entry(row['id'], row['date'], row['entry'], row['concept'],
+                          row['mood_id'])
+        # Add dictionary representation of the entry to the list
+        entries.append(entry.__dict__)
+
+    return json.dumps(entries)
