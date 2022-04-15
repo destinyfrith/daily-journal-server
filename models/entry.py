@@ -11,6 +11,7 @@ class Entry():
         self.entry = entry
         self.concept = concept
         self.mood_id = mood_id
+        self.mood = None
 
         # code we would write to make a new object
         # new_entry = Entry(1, "Snickers", "Dog", "Recreation", 1, 4)

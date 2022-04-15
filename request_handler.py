@@ -1,6 +1,7 @@
 import json
 from http.server import BaseHTTPRequestHandler, HTTPServer
-from views.entry_requests import get_all_entries, get_single_entry, delete_entry, search_entries
+from views.entry_requests import get_all_entries, get_single_entry, delete_entry
+from views.entry_requests import search_entries, create_journal_entry, update_entry
 from views.mood_requests import get_all_moods
 
 # Here's a class. It inherits from another class.
@@ -125,18 +126,9 @@ class HandleRequests(BaseHTTPRequestHandler):
         # the orange squiggle, you'll define the create_animal
         # function next.
         if resource == "entries":
-            new_entry = create_entry(post_body)
+            new_entry = create_journal_entry(post_body)
 
             self.wfile.write(f"{new_entry}".encode())
-
-        # Initialize new location
-        new_mood = None
-
-        if resource == "moods":
-            new_mood = create_mood(post_body)
-
-        # Encode the new location and send in response
-            self.wfile.write(f"{new_mood}".encode())
 
     # Here's a method on the class that overrides the parent's method.
     # It handles any PUT request.

@@ -19,10 +19,10 @@ def get_all_entries():
             e.entry,
             e.concept,
             e.mood_id,
-            m.label
+            m.label label
         FROM Entry as e
         JOIN Mood as m
-        ON m.id = e.mood_id
+            ON m.id = e.mood_id
         """)
 
         # Initialize an empty list to hold all animal representations
@@ -41,7 +41,7 @@ def get_all_entries():
                 row['id'], row['label'])
 
             # Add the dictionary representation of the location to the animal
-            entry.mood_id = mood.__dict__
+            entry.mood = mood.__dict__
 
             # Add the dictionary representation of the animal to the list
             entries.append(entry.__dict__)
@@ -116,3 +116,54 @@ def search_entries(searchedTerm):
         entries.append(entry.__dict__)
 
     return json.dumps(entries)
+
+
+def create_journal_entry(new_entry):
+    with sqlite3.connect("./journal.sqlite3") as conn:
+        db_cursor = conn.cursor()
+
+        db_cursor.execute("""
+        INSERT INTO Entry
+            ( date, entry, concept, mood_id )
+        VALUES
+            ( ?, ?, ?, ?);
+        """, (new_entry['date'], new_entry['entry'],
+              new_entry['concept'], new_entry['moodId'], ))
+
+        # The `lastrowid` property on the cursor will return
+        # the primary key of the last thing that got added to
+        # the database.
+        id = db_cursor.lastrowid
+
+        # Add the `id` property to the animal dictionary that
+        # was sent by the client so that the client sees the
+        # primary key in the response.
+        new_entry['id'] = id
+
+    return json.dumps(new_entry)
+
+def update_entry(id, new_entry):
+    with sqlite3.connect("./journal.sqlite3") as conn:
+        db_cursor = conn.cursor()
+
+        db_cursor.execute("""
+        UPDATE Entry
+            SET
+                date = ?,
+                entry = ?,
+                concept = ?,
+                mood_id = ?
+        WHERE id = ?
+        """, (new_entry['date'], new_entry['entry'],
+              new_entry['concept'], new_entry['moodId'], id, ))
+
+        # Were any rows affected?
+        # Did the client send an `id` that exists?
+        rows_affected = db_cursor.rowcount
+
+    if rows_affected == 0:
+        # Forces 404 response by main module
+        return False
+    else:
+        # Forces 204 response by main module
+        return True
